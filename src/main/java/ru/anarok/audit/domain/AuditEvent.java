@@ -7,6 +7,7 @@ import java.util.Map;
 
 @Data
 public class AuditEvent {
+    private int id;
     private long timestamp = System.currentTimeMillis();
     private String principal;
     private String type;
