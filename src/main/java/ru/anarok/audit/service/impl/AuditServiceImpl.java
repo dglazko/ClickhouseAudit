@@ -13,7 +13,7 @@ public class AuditServiceImpl implements IAuditService {
 
     @Override
     public void audit(AuditEvent auditEvent) {
-        auditEventDao.save(auditEvent);
-        log.info(AUDIT_EVENT_MESSAGE, auditEvent.getType(), auditEvent.getMessage(), auditEvent.getPrincipal());
+        auditEvent = auditEventDao.save(auditEvent);
+        log.info(AUDIT_EVENT_MESSAGE, auditEvent.getType(), auditEvent.getId(), auditEvent.getMessage(), auditEvent.getPrincipal());
     }
 }
