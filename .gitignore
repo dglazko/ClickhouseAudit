@@ -1,0 +1,33 @@
+## GENERAL ##
+lib/
+log/
+*.log
+*.log.gz
+.git/
+*.csv
+
+## IDEA ##
+*.iml
+*.ipr
+*.iws
+*.ids
+.idea/
+out/
+
+## MAVEN ##
+target/
+
+## GRADLE ##
+build/
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+
+## Eclipse ##
+.settings/
+bin/
+.classpath
+.project
+
+dependency-reduced-pom.xml
