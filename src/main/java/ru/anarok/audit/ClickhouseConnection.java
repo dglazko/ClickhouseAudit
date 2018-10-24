@@ -34,4 +34,8 @@ public class ClickhouseConnection {
     public void shutdownImmediately() throws SQLException {
         connection.close();
     }
+
+    public <T> ClickhouseTable<T> table(Class<T> tableClass){
+        return null;
+    }
 }
