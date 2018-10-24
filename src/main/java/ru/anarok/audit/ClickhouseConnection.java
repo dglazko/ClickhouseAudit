@@ -26,7 +26,7 @@ public class ClickhouseConnection {
             connection = DriverManager.getConnection(uri, username, password);
     }
 
-    public ResultSet executeQuey(String sql) throws SQLException {
+    public ResultSet executeQuery(String sql) throws SQLException {
         return connection.prepareStatement(sql).executeQuery();
     }
 
