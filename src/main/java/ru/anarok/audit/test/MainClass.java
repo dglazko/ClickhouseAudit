@@ -10,13 +10,11 @@ public class MainClass {
 
     public static void main(String[] args) throws SQLException {
         ClickhouseConnection connection = new ClickhouseConnection();
-        connection.connect("localhost");
+        connection.connect("10.48.40.178");
 
         ClickhouseTable<AuthAudit> table = connection.table(AuthAudit.class);
 
         table.insert(new AuthAudit("Test User 1", "Test ip 1", false));
         table.insert(new AuthAudit("Test User 2", "Test ip 2", true));
-
-
     }
 }
