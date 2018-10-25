@@ -1,14 +1,13 @@
-package ru.anarok.audit.test;
+package ru.anarok.audit;
 
-import ru.anarok.audit.ClickhouseConnection;
-import ru.anarok.audit.ClickhouseTable;
+import org.junit.jupiter.api.Test;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class MainClass {
+class MainTest {
 
-    public static void main(String[] args) throws SQLException {
+    @Test
+    void comrehensiveTest() throws SQLException {
         ClickhouseConnection connection = new ClickhouseConnection();
         connection.connect("10.48.40.178");
 

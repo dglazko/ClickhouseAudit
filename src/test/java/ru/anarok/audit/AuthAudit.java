@@ -1,6 +1,4 @@
-package ru.anarok.audit.test;
-
-import ru.anarok.audit.AuditTable;
+package ru.anarok.audit;
 
 @AuditTable("audit")
 public class AuthAudit {
