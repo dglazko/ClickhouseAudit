@@ -11,9 +11,9 @@ class MainTest {
         ClickhouseConnection connection = new ClickhouseConnection();
         connection.connect("localhost");
 
-        ClickhouseTable<AuthAudit> table = connection.table(AuthAudit.class);
+/*        ClickhouseTable<AuthAudit> table = connection.table(AuthAudit.class);
 
         table.insert(new AuthAudit("Test User 1", "Test ip 1", false));
-        table.insert(new AuthAudit("Test User 2", "Test ip 2", true));
+        table.insert(new AuthAudit("Test User 2", "Test ip 2", true));*/
     }
 }
