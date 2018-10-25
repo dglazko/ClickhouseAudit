@@ -1,21 +1,16 @@
 package ru.anarok.audit;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.anarok.audit.internal.ColumnSchema;
-import ru.anarok.audit.internal.TableSchema;
+import ru.anarok.audit.domain.AuditEvent;
+import ru.anarok.audit.utils.IdUtils;
 
-import java.lang.reflect.Field;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
+import java.sql.*;
 import java.util.Map;
 
 @Slf4j
 public class ClickhouseConnection {
     private Connection connection;
-    private Map<String, TableSchema> tableSchemaMap = new HashMap<>();
+    private final IdUtils idUtils = new IdUtils();
 
     public void connect(String host) throws SQLException {
         connect(host, 8123, null, null, null);
@@ -33,74 +28,68 @@ public class ClickhouseConnection {
             connection = DriverManager.getConnection(uri);
         else
             connection = DriverManager.getConnection(uri, username, password);
-        getRemoteSchema();
+
+        createTables();
+    }
+
+    protected void createTables() throws SQLException {
+        executeQuery(
+            "CREATE TABLE IF NOT EXISTS Audits (" +
+                "auditId UInt64," +
+                "timestamp DateTime," +
+                "emitter String, " +
+                "type String," +
+                "message String" +
+                ") ENGINE = MergeTree() " +
+                "PARTITION BY toYYYYMM(timestamp) " +
+                "ORDER BY timestamp " +
+                "SETTINGS index_granularity=8192"
+        );
+
+        executeQuery(
+            "CREATE TABLE IF NOT EXISTS AuditAttributes (" +
+                "auditId UInt64," +
+                "name String," +
+                "value String" +
+                ") ENGINE = MergeTree() " +
+                "PARTITION BY (auditId, name) " +
+                "ORDER BY (auditId, name) " +
+                "SETTINGS index_granularity=8192"
+        );
     }
 
     public ResultSet executeQuery(String sql) throws SQLException {
         return connection.prepareStatement(sql).executeQuery();
     }
 
+    public void insert(AuditEvent e) throws SQLException {
+        long id = idUtils.getRecordId();
+        PreparedStatement stmt = connection.prepareStatement(
+            "INSERT INTO Audits (auditId, timestamp, emitter, type, message)" +
+                "VALUES (?, ?, ?, ?, ?)"
+        );
+        stmt.setLong(1, id);
+        stmt.setLong(2, e.getTimestamp() / 1000);
+        stmt.setString(3, e.getEmitter());
+        stmt.setString(4, e.getType());
+        stmt.setString(5, e.getMessage());
+        stmt.executeUpdate();
+        stmt.close();
+
+        for (Map.Entry<String, String> stringStringEntry : e.getData().entrySet()) {
+            stmt = connection.prepareStatement(
+                "INSERT INTO AuditAttributes (auditId, name, value) VALUES (?,?,?)"
+            );
+            stmt.setLong(1, id);
+            stmt.setString(2, stringStringEntry.getKey());
+            stmt.setString(3, stringStringEntry.getValue());
+            stmt.executeUpdate();
+            stmt.close();
+        }
+    }
 
     public void shutdownImmediately() throws SQLException {
         connection.close();
     }
 
-    public <T> ClickhouseTable<T> table(Class<T> tableClass) throws SQLException {
-        AuditTable tableNameAnnotation = tableClass.getAnnotation(AuditTable.class);
-        String tableName = tableClass.getSimpleName().toLowerCase();
-        if (tableNameAnnotation != null && !tableNameAnnotation.value().isEmpty())
-            tableName = tableNameAnnotation.value();
-        Field[] declaredFields = tableClass.getDeclaredFields();
-
-        if (!tableSchemaMap.containsKey(tableName)) {
-            createTable(tableName, declaredFields);
-        }
-
-        return new ClickhouseTable<T>();
-    }
-
-    private void createTable(String tableName, Field[] declaredFields) throws SQLException {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE TABLE IF NOT EXISTS ").append(tableName).append("(");
-        for (Field declaredField : declaredFields) {
-            sb.append(declaredField.getName()).append(" ");
-            sb.append(getDatabaseDataType(declaredField.getType()));
-            if (declaredField != declaredFields[declaredFields.length - 1])
-                sb.append(", ");
-        }
-        sb.append(") ENGINE = Memory()");
-        String schemaString = sb.toString();
-        log.debug("Creating table {} with schema '{}'", tableName, schemaString);
-        executeQuery(schemaString);
-    }
-
-    private String getDatabaseDataType(Class prim) {
-        if (prim == byte.class) return "Int8";
-        if (prim == short.class) return "Int16";
-        if (prim == int.class) return "Int32";
-        if (prim == long.class) return "Int64";
-        if (prim == float.class) return "Float32";
-        if (prim == double.class) return "Float64";
-        if (prim == boolean.class) return "UInt8";
-        if (prim == char.class) return "UInt16";
-        if (prim == String.class) return "String";
-        throw new IllegalArgumentException("Unknown datatype " + prim.getName());
-    }
-
-    private void getRemoteSchema() throws SQLException {
-        ResultSet rs = executeQuery("select * from system.columns");
-        tableSchemaMap.clear();
-        while (rs.next()) {
-            TableSchema tableSchema =
-                    tableSchemaMap.computeIfAbsent(rs.getString("table"), TableSchema::new);
-            ColumnSchema columnSchema = new ColumnSchema(
-                    rs.getString("name"),
-                    rs.getString("type"),
-                    rs.getString("default_kind"),
-                    rs.getString("default_expression")
-            );
-            tableSchema.getColumnSchemaList().add(columnSchema);
-        }
-        log.debug("Remote table schema retrieval complete");
-    }
 }
