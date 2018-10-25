@@ -1,4 +1,4 @@
-package ru.anarok.audit.utils;
+package ru.anarok.audit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ class IdUtilsTest {
         Assertions.assertEquals("1111111111111111", fullRowId, "Local row ID field overflow");
     }
 
-    public String printBits(long value) {
+    private String printBits(long value) {
         return (Long.toBinaryString(value));
     }
 

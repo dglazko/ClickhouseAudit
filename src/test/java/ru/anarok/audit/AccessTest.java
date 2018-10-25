@@ -3,6 +3,8 @@ package ru.anarok.audit;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import ru.anarok.audit.ClickhouseConnectionFactory;
+import ru.anarok.audit.DefaultConnection;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,8 +13,8 @@ import java.sql.SQLException;
 public class AccessTest {
     @Test
     public void test() throws SQLException {
-        ClickhouseConnection connection = new ClickhouseConnection();
-        connection.connect("localhost");
+        DefaultConnection connection = (DefaultConnection) ClickhouseConnectionFactory.create("localhost").build();
+        connection.connect();
 
         ResultSet resultSet = connection.executeQuery("SELECT * FROM (" +
                 "SELECT * FROM Audits" +
@@ -37,8 +39,8 @@ public class AccessTest {
     @Test
     @Disabled("For internal testing purposes")
     public void dropTables() throws SQLException {
-        ClickhouseConnection connection = new ClickhouseConnection();
-        connection.connect("localhost");
+        DefaultConnection connection = (DefaultConnection) ClickhouseConnectionFactory.create("localhost").build();
+        connection.connect();
 
         connection.executeQuery("DROP TABLE Audits");
         connection.executeQuery("DROP TABLE AuditAttributes");

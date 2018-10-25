@@ -1,4 +1,4 @@
-package ru.anarok.audit.utils;
+package ru.anarok.audit;
 
 import java.lang.management.ManagementFactory;
 import java.util.Random;
