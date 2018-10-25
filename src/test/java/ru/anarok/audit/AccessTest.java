@@ -3,8 +3,6 @@ package ru.anarok.audit;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import ru.anarok.audit.ClickhouseConnectionFactory;
-import ru.anarok.audit.DefaultConnection;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
