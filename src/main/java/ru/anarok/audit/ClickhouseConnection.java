@@ -27,9 +27,34 @@ public class ClickhouseConnection {
             connection = DriverManager.getConnection(uri);
         else
             connection = DriverManager.getConnection(uri, username, password);
-        executeQuery("CREATE TABLE IF NOT EXISTS Audits (" +
-            "id UInt64 PRIMARY KEY AUTO_INCREMENT" +
-            ") ENGINE = MergeTree()");
+
+        createTables();
+    }
+
+    protected void createTables() throws SQLException {
+        executeQuery(
+            "CREATE TABLE IF NOT EXISTS Audits (" +
+                "id UInt64," +
+                "timestamp DateTime," +
+                "emitter String, " +
+                "type String," +
+                "message String" +
+                ") ENGINE = MergeTree() " +
+                "PARTITION BY toYYYYMM(timestamp) " +
+                "ORDER BY timestamp " +
+                "SETTINGS index_granularity=8192"
+        );
+
+        executeQuery(
+            "CREATE TABLE IF NOT EXISTS AuditAttributes (" +
+                "auditId UInt64," +
+                "name String," +
+                "value String" +
+                ") ENGINE = MergeTree() " +
+                "PARTITION BY auditId " +
+                "ORDER BY auditId " +
+                "SETTINGS index_granularity=8192"
+        );
     }
 
     public ResultSet executeQuery(String sql) throws SQLException {

@@ -9,7 +9,7 @@ class MainTest {
     @Test
     void comprehensiveTest() throws SQLException {
         ClickhouseConnection connection = new ClickhouseConnection();
-        connection.connect("localhost");
+        connection.connect("10.48.40.178");
 
 /*        ClickhouseTable<AuthAudit> table = connection.table(AuthAudit.class);
 
