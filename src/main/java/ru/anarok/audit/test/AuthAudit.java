@@ -1,5 +1,8 @@
 package ru.anarok.audit.test;
 
+import ru.anarok.audit.AuditTable;
+
+@AuditTable("audit")
 public class AuthAudit {
     private String username;
     private String ip;

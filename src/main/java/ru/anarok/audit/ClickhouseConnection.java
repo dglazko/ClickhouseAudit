@@ -44,18 +44,30 @@ public class ClickhouseConnection {
         connection.close();
     }
 
-    public <T> ClickhouseTable<T> table(Class<T> tableClass){
+    public <T> ClickhouseTable<T> table(Class<T> tableClass) {
+        AuditTable tableNameAnnotation = tableClass.getAnnotation(AuditTable.class);
+        String tableName = tableClass.getSimpleName().toLowerCase();
+        if (tableNameAnnotation != null && !tableNameAnnotation.value().isEmpty())
+            tableName = tableNameAnnotation.value();
         Field[] declaredFields = tableClass.getDeclaredFields();
+
+        if (!tableSchemaMap.containsKey(tableName)) {
+            createTable(tableName, declaredFields);
+        }
+
+        return new ClickhouseTable<T>();
+    }
+
+    private void createTable(String tableName, Field[] declaredFields) {
         for (Field declaredField : declaredFields) {
             System.out.println(declaredField);
         }
-        return new ClickhouseTable<T>();
     }
 
     private void getRemoteSchema() throws SQLException {
         ResultSet rs = executeQuery("select * from system.columns");
         tableSchemaMap.clear();
-        while(rs.next()){
+        while (rs.next()) {
             TableSchema tableSchema =
                 tableSchemaMap.computeIfAbsent(rs.getString("table"), TableSchema::new);
             ColumnSchema columnSchema = new ColumnSchema(
