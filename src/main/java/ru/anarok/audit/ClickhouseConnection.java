@@ -1,6 +1,6 @@
 package ru.anarok.audit;
 
-import javafx.scene.control.Tab;
+import lombok.extern.slf4j.Slf4j;
 import ru.anarok.audit.internal.ColumnSchema;
 import ru.anarok.audit.internal.TableSchema;
 
@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 public class ClickhouseConnection {
     private Connection connection;
     private Map<String, TableSchema> tableSchemaMap = new HashMap<>();
@@ -68,8 +69,9 @@ public class ClickhouseConnection {
                 sb.append(", ");
         }
         sb.append(") ENGINE = Memory()");
-        System.out.println(sb.toString());
-        executeQuery(sb.toString());
+        String schemaString = sb.toString();
+        log.debug("Creating table {} with schema '{}'", tableName, schemaString);
+        executeQuery(schemaString);
     }
 
     private String getDatabaseDataType(Class prim) {
@@ -90,15 +92,15 @@ public class ClickhouseConnection {
         tableSchemaMap.clear();
         while (rs.next()) {
             TableSchema tableSchema =
-                tableSchemaMap.computeIfAbsent(rs.getString("table"), TableSchema::new);
+                    tableSchemaMap.computeIfAbsent(rs.getString("table"), TableSchema::new);
             ColumnSchema columnSchema = new ColumnSchema(
-                rs.getString("name"),
-                rs.getString("type"),
-                rs.getString("default_kind"),
-                rs.getString("default_expression")
+                    rs.getString("name"),
+                    rs.getString("type"),
+                    rs.getString("default_kind"),
+                    rs.getString("default_expression")
             );
             tableSchema.getColumnSchemaList().add(columnSchema);
         }
-        System.out.println("Table schema is ready");
+        log.debug("Remote table schema retrieval complete");
     }
 }

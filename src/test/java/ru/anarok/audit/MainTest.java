@@ -7,9 +7,9 @@ import java.sql.SQLException;
 class MainTest {
 
     @Test
-    void comrehensiveTest() throws SQLException {
+    void comprehensiveTest() throws SQLException {
         ClickhouseConnection connection = new ClickhouseConnection();
-        connection.connect("10.48.40.178");
+        connection.connect("localhost");
 
         ClickhouseTable<AuthAudit> table = connection.table(AuthAudit.class);
 

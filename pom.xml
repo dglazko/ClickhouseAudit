@@ -13,6 +13,8 @@
         <clickhouse.version>0.1.42</clickhouse.version>
         <lombok.version>1.18.2</lombok.version>
         <junit.version>5.3.1</junit.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <log4j.version>2.11.1</log4j.version>
     </properties>
 
     <dependencies>
@@ -31,6 +33,18 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>${log4j.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
