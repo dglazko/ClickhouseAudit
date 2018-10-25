@@ -44,7 +44,7 @@ public class ClickhouseConnection {
         connection.close();
     }
 
-    public <T> ClickhouseTable<T> table(Class<T> tableClass) {
+    public <T> ClickhouseTable<T> table(Class<T> tableClass) throws SQLException {
         AuditTable tableNameAnnotation = tableClass.getAnnotation(AuditTable.class);
         String tableName = tableClass.getSimpleName().toLowerCase();
         if (tableNameAnnotation != null && !tableNameAnnotation.value().isEmpty())
@@ -58,12 +58,18 @@ public class ClickhouseConnection {
         return new ClickhouseTable<T>();
     }
 
-    private void createTable(String tableName, Field[] declaredFields) {
+    private void createTable(String tableName, Field[] declaredFields) throws SQLException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE TABLE IF NOT EXISTS ").append(tableName).append("(");
         for (Field declaredField : declaredFields) {
-            Class<Byte> byteClass = byte.class;
-            System.out.println(declaredField);
-            getDatabaseDataType(declaredField.getType());
+            sb.append(declaredField.getName()).append(" ");
+            sb.append(getDatabaseDataType(declaredField.getType()));
+            if (declaredField != declaredFields[declaredFields.length - 1])
+                sb.append(", ");
         }
+        sb.append(") ENGINE = Memory()");
+        System.out.println(sb.toString());
+        executeQuery(sb.toString());
     }
 
     private String getDatabaseDataType(Class prim) {
