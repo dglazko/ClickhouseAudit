@@ -60,8 +60,23 @@ public class ClickhouseConnection {
 
     private void createTable(String tableName, Field[] declaredFields) {
         for (Field declaredField : declaredFields) {
+            Class<Byte> byteClass = byte.class;
             System.out.println(declaredField);
+            getDatabaseDataType(declaredField.getType());
         }
+    }
+
+    private String getDatabaseDataType(Class prim) {
+        if (prim == byte.class) return "Int8";
+        if (prim == short.class) return "Int16";
+        if (prim == int.class) return "Int32";
+        if (prim == long.class) return "Int64";
+        if (prim == float.class) return "Float32";
+        if (prim == double.class) return "Float64";
+        if (prim == boolean.class) return "UInt8";
+        if (prim == char.class) return "UInt16";
+        if (prim == String.class) return "String";
+        throw new IllegalArgumentException("Unknown datatype " + prim.getName());
     }
 
     private void getRemoteSchema() throws SQLException {
