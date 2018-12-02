@@ -2,7 +2,6 @@ package ru.anarok.audit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.anarok.audit.impl.AuditEvent;
 import ru.anarok.audit.impl.DefaultAuditService;
 
 import java.util.concurrent.CountDownLatch;
@@ -21,6 +20,11 @@ public class ErrorHandlerTest {
 
         ClickhouseConnection mockConnection = new ClickhouseConnection() {
             @Override
+            public void close() throws Exception {
+
+            }
+
+            @Override
             public void connect() {
 
             }
@@ -28,11 +32,6 @@ public class ErrorHandlerTest {
             @Override
             public void insert(AuditEvent e) throws Exception {
                 neverEndingBlockingLatch.await();
-            }
-
-            @Override
-            public void shutdownImmediately() {
-
             }
         };
 
@@ -68,6 +67,11 @@ public class ErrorHandlerTest {
     public void customExceptionHandling() {
         ClickhouseConnection mockConnection = new ClickhouseConnection() {
             @Override
+            public void close() throws Exception {
+
+            }
+
+            @Override
             public void connect() {
 
             }
@@ -75,11 +79,6 @@ public class ErrorHandlerTest {
             @Override
             public void insert(AuditEvent e) {
                 throw new IllegalStateException();
-            }
-
-            @Override
-            public void shutdownImmediately() {
-
             }
         };
 

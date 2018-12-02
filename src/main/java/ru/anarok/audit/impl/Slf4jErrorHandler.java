@@ -1,6 +1,7 @@
 package ru.anarok.audit.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import ru.anarok.audit.AuditEvent;
 import ru.anarok.audit.ClickhouseErrorHandler;
 
 @Slf4j

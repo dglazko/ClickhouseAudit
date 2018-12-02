@@ -1,6 +1,7 @@
 package ru.anarok.audit.impl;
 
 import lombok.RequiredArgsConstructor;
+import ru.anarok.audit.AuditEvent;
 import ru.anarok.audit.ClickhouseAuditService;
 import ru.anarok.audit.ClickhouseConnection;
 import ru.anarok.audit.ClickhouseErrorHandler;

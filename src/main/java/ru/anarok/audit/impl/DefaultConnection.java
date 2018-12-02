@@ -1,6 +1,7 @@
 package ru.anarok.audit.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import ru.anarok.audit.AuditEvent;
 import ru.anarok.audit.ClickhouseConnection;
 import ru.anarok.audit.ClickhouseIdProvider;
 
@@ -89,8 +90,7 @@ public class DefaultConnection implements ClickhouseConnection {
     }
 
     @Override
-    public void shutdownImmediately() throws SQLException {
+    public void close() throws Exception {
         connection.close();
     }
-
 }

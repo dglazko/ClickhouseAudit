@@ -2,7 +2,6 @@ package ru.anarok.audit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.anarok.audit.impl.AuditEvent;
 import ru.anarok.audit.impl.DefaultAuditService;
 
 import java.util.concurrent.CountDownLatch;
@@ -21,6 +20,11 @@ public class AuditServiceTest {
 
         ClickhouseConnection mockConnection = new ClickhouseConnection() {
             @Override
+            public void close() {
+
+            }
+
+            @Override
             public void connect() {
 
             }
@@ -29,11 +33,6 @@ public class AuditServiceTest {
             public void insert(AuditEvent e) {
                 executionCounter.incrementAndGet();
                 lastAudit.set(e);
-            }
-
-            @Override
-            public void shutdownImmediately() {
-
             }
         };
 
@@ -65,6 +64,11 @@ public class AuditServiceTest {
 
         ClickhouseConnection mockConnection = new ClickhouseConnection() {
             @Override
+            public void close() {
+
+            }
+
+            @Override
             public void connect() {
 
             }
@@ -76,11 +80,6 @@ public class AuditServiceTest {
                 } catch (InterruptedException ignored) {
 
                 }
-            }
-
-            @Override
-            public void shutdownImmediately() {
-
             }
         };
 

@@ -1,4 +1,4 @@
-package ru.anarok.audit.impl;
+package ru.anarok.audit;
 
 import lombok.*;
 
