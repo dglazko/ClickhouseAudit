@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import ru.anarok.audit.ClickhouseConnection;
 import ru.anarok.audit.ClickhouseIdProvider;
 
+import java.sql.SQLException;
+
 @RequiredArgsConstructor
 @Slf4j
 public class DefaultConnectionFactory implements ObjectFactory<ClickhouseConnection> {
@@ -17,7 +19,13 @@ public class DefaultConnectionFactory implements ObjectFactory<ClickhouseConnect
 
     @Override
     public ClickhouseConnection create() {
-        return new DefaultConnection(idProvider, uri, username, password);
+        DefaultConnection connection = new DefaultConnection(idProvider, uri, username, password);
+        try {
+            connection.connect();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return connection;
     }
 
     @Override
