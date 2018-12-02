@@ -18,12 +18,27 @@ public class ClickhouseAuditService {
     private final ClickhouseConnection connection;
     private final ClickhouseErrorHandler errorHandler;
 
-    public Future<Boolean> submit(AuditEvent event) {
-        ClickhouseInsertTask task = new ClickhouseInsertTask(event, connection, errorHandler);
+    /**
+     * Submit audit to the Clickhouse server
+     *
+     * @param audit audit to be submitted
+     * @return future that returns true if the task has been successfully executed
+     */
+    public Future<Boolean> submit(AuditEvent audit) {
+        ClickhouseInsertTask task = new ClickhouseInsertTask(audit, connection, errorHandler);
 
         return executorService.submit(task);
     }
 
+    /**
+     * Shutdown audit service, interrupt currently executing tasks,
+     * return queued tasks.
+     * <p>
+     * Warning! This method might not return all the tasks that were currently running at the time
+     * service was shutdown. To obtain these tasks one should register custom {@link ClickhouseErrorHandler}
+     *
+     * @return queued tasks
+     */
     public List<AuditEvent> shutdownInterrupted() {
         if (!taskExtractor.isReady())
             return Collections.emptyList();
@@ -37,8 +52,18 @@ public class ClickhouseAuditService {
                 .collect(Collectors.toList());
     }
 
-    public void shutdownWait(long timeout, TimeUnit unit) throws InterruptedException {
-        executorService.awaitTermination(timeout, unit);
+    /**
+     * Shutdown audit service, await until all active & queued tasks are compelled
+     * or until this call times out
+     *
+     * @param timeout the maximum time to wait
+     * @param unit    the time unit of the timeout argument
+     * @return {@code true} if this executor terminated and
+     * {@code false} if the timeout elapsed before termination
+     * @throws InterruptedException if interrupted while waiting
+     */
+    public boolean shutdownWait(long timeout, TimeUnit unit) throws InterruptedException {
+        return executorService.awaitTermination(timeout, unit);
     }
 
     @RequiredArgsConstructor
