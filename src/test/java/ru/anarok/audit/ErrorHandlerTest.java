@@ -1,5 +1,6 @@
 package ru.anarok.audit;
 
+import cn.danielw.fop.ObjectPool;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.anarok.audit.impl.DefaultAuditService;
@@ -11,6 +12,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static ru.anarok.audit.AuditServiceTest.newMockConnection;
+
 @SuppressWarnings("Duplicates")
 public class ErrorHandlerTest {
 
@@ -18,22 +21,7 @@ public class ErrorHandlerTest {
     public void interruptExceptionHandling() throws InterruptedException {
         CountDownLatch neverEndingBlockingLatch = new CountDownLatch(1);
 
-        ClickhouseConnection mockConnection = new ClickhouseConnection() {
-            @Override
-            public void close() throws Exception {
-
-            }
-
-            @Override
-            public void connect() {
-
-            }
-
-            @Override
-            public void insert(AuditEvent e) throws Exception {
-                neverEndingBlockingLatch.await();
-            }
-        };
+        ObjectPool<ClickhouseConnection> mockConnection = newMockConnection(e -> neverEndingBlockingLatch.await());
 
         AtomicBoolean errorFired = new AtomicBoolean(false);
         AtomicReference<Throwable> exceptionReference = new AtomicReference<>();
@@ -65,22 +53,9 @@ public class ErrorHandlerTest {
 
     @Test
     public void customExceptionHandling() {
-        ClickhouseConnection mockConnection = new ClickhouseConnection() {
-            @Override
-            public void close() throws Exception {
-
-            }
-
-            @Override
-            public void connect() {
-
-            }
-
-            @Override
-            public void insert(AuditEvent e) {
-                throw new IllegalStateException();
-            }
-        };
+        ObjectPool<ClickhouseConnection> mockConnection = newMockConnection(auditEvent -> {
+            throw new IllegalStateException();
+        });
 
         AtomicBoolean errorFired = new AtomicBoolean(false);
         AtomicReference<Throwable> exceptionReference = new AtomicReference<>();

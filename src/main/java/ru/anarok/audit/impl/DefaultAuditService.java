@@ -1,5 +1,7 @@
 package ru.anarok.audit.impl;
 
+import cn.danielw.fop.ObjectPool;
+import cn.danielw.fop.Poolable;
 import lombok.RequiredArgsConstructor;
 import ru.anarok.audit.AuditEvent;
 import ru.anarok.audit.ClickhouseAuditService;
@@ -16,7 +18,7 @@ import java.util.stream.Collectors;
 public class DefaultAuditService implements ClickhouseAuditService {
     private final TaskExtractor taskExtractor = new TaskExtractor();
     private final ExecutorService executorService;
-    private final ClickhouseConnection connection;
+    private final ObjectPool<ClickhouseConnection> connectionPool;
     private final ClickhouseErrorHandler errorHandler;
 
     /**
@@ -26,7 +28,7 @@ public class DefaultAuditService implements ClickhouseAuditService {
      * @return future that returns true if the task has been successfully executed
      */
     public Future<Boolean> submit(AuditEvent audit) {
-        ClickhouseInsertTask task = new ClickhouseInsertTask(audit, connection, errorHandler);
+        ClickhouseInsertTask task = new ClickhouseInsertTask(audit, connectionPool, errorHandler);
 
         return executorService.submit(task);
     }
@@ -70,13 +72,16 @@ public class DefaultAuditService implements ClickhouseAuditService {
     @RequiredArgsConstructor
     static class ClickhouseInsertTask implements Callable<Boolean> {
         private final AuditEvent event;
-        private final ClickhouseConnection connection;
+        private final ObjectPool<ClickhouseConnection> connectionPool;
         private final ClickhouseErrorHandler errorHandler;
 
         @Override
         public Boolean call() {
             try {
-                connection.insert(event);
+                try (Poolable<ClickhouseConnection> poolable = connectionPool.borrowObject()) {
+                    poolable.getObject().insert(event);
+                }
+
                 return true;
             } catch (Exception ex) {
                 if (errorHandler != null)

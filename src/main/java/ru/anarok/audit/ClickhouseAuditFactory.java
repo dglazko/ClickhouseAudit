@@ -1,17 +1,23 @@
 package ru.anarok.audit;
 
+import cn.danielw.fop.ObjectFactory;
+import cn.danielw.fop.ObjectPool;
+import cn.danielw.fop.PoolConfig;
 import ru.anarok.audit.impl.*;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ClickhouseAuditFactory {
-    private final String hostname;
+    private ExecutorService executorService;
+    private ObjectFactory<ClickhouseConnection> connectionFactory;
+    private PoolConfig poolConfig;
+
     private ClickhouseIdProvider idProvider = new DefaultIdProvider();
     private ClickhouseErrorHandler errorHandler = new Slf4jErrorHandler();
-    private ClickhouseConnection connection;
-    private ExecutorService executorService;
+
     private int port = 8123;
+    private String hostname;
     private String database;
     private String username;
     private String password;
@@ -20,8 +26,16 @@ public class ClickhouseAuditFactory {
         this.hostname = hostname;
     }
 
+    private ClickhouseAuditFactory(ObjectFactory<ClickhouseConnection> factory) {
+        this.connectionFactory = factory;
+    }
+
     public static ClickhouseAuditFactory create(String hostname) {
         return new ClickhouseAuditFactory(hostname);
+    }
+
+    public static ClickhouseAuditFactory create(ObjectFactory<ClickhouseConnection> factory) {
+        return new ClickhouseAuditFactory(factory);
     }
 
     public ClickhouseAuditFactory port(int port) {
@@ -61,30 +75,45 @@ public class ClickhouseAuditFactory {
         return this;
     }
 
-    public ClickhouseAuditFactory connection(ClickhouseConnection connection) {
-        this.connection = connection;
+    public ClickhouseAuditFactory connectionFactory(ObjectFactory<ClickhouseConnection> factory) {
+        this.connectionFactory = factory;
+        return this;
+    }
+
+    public ClickhouseAuditFactory poolConfig(PoolConfig config) {
+        this.poolConfig = config;
         return this;
     }
 
     public ClickhouseAuditService build() {
-        ClickhouseConnection connection = internalGetConnection();
+        ObjectFactory<ClickhouseConnection> connection = internalGetConnection();
         ExecutorService executorService = internalGetExecutor();
+        PoolConfig poolConfig = internalGetPoolConfig();
 
+        ObjectPool<ClickhouseConnection> pool = new ObjectPool<>(poolConfig, connection);
 
-        return new DefaultAuditService(executorService, connection, errorHandler);
+        return new DefaultAuditService(executorService, pool, errorHandler);
     }
 
-    private ClickhouseConnection internalGetConnection() {
-        if (this.connection != null)
-            return this.connection;
+    private PoolConfig internalGetPoolConfig() {
+        if (poolConfig != null)
+            return poolConfig;
 
-        DefaultConnection connection;
-        String uri = "jdbc:clickhouse://" + hostname + ":" + port;
+        PoolConfig config = new PoolConfig();
+        config.setPartitionSize(5);
+        config.setMaxSize(10);
+        config.setMinSize(1);
+        config.setMaxIdleMilliseconds(60 * 1000 * 5);
 
-        if (database != null)
-            uri += "/" + database;
-        connection = new DefaultConnection(idProvider, uri, username, password);
-        return connection;
+        return config;
+    }
+
+    private ObjectFactory<ClickhouseConnection> internalGetConnection() {
+        if (connectionFactory != null)
+            return connectionFactory;
+
+        String uri = "jdbc:clickhouse://" + hostname + ":" + port + (database != null ? ("/" + database) : "");
+        return new DefaultConnectionFactory(idProvider, uri, username, password);
     }
 
     private ExecutorService internalGetExecutor() {

@@ -1,5 +1,7 @@
 package ru.anarok.audit;
 
+import cn.danielw.fop.ObjectPool;
+import cn.danielw.fop.PoolConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.anarok.audit.impl.DefaultAuditService;
@@ -13,28 +15,26 @@ import java.util.concurrent.atomic.AtomicReference;
 @SuppressWarnings("Duplicates")
 public class AuditServiceTest {
 
+    public static ObjectPool<ClickhouseConnection> newMockConnection(TestConnectionFactory.TestConnectionInsertHandler eventConsumer) {
+        TestConnectionFactory objectFactory = new TestConnectionFactory(eventConsumer);
+        PoolConfig config = new PoolConfig();
+        config.setPartitionSize(5);
+        config.setMaxSize(10);
+        config.setMinSize(1);
+        config.setMaxIdleMilliseconds(60 * 1000 * 5);
+
+        return new ObjectPool<>(config, objectFactory);
+    }
+
     @Test
     public void normalExecutionTest() {
         AtomicInteger executionCounter = new AtomicInteger();
         AtomicReference<AuditEvent> lastAudit = new AtomicReference<>();
 
-        ClickhouseConnection mockConnection = new ClickhouseConnection() {
-            @Override
-            public void close() {
-
-            }
-
-            @Override
-            public void connect() {
-
-            }
-
-            @Override
-            public void insert(AuditEvent e) {
-                executionCounter.incrementAndGet();
-                lastAudit.set(e);
-            }
-        };
+        ObjectPool<ClickhouseConnection> mockConnection = newMockConnection(auditEvent -> {
+            executionCounter.incrementAndGet();
+            lastAudit.set(auditEvent);
+        });
 
         DefaultAuditService service = new DefaultAuditService(
                 Executors.newSingleThreadExecutor(),
@@ -62,26 +62,13 @@ public class AuditServiceTest {
     public void executorStopTest() {
         CountDownLatch latch = new CountDownLatch(1);
 
-        ClickhouseConnection mockConnection = new ClickhouseConnection() {
-            @Override
-            public void close() {
+        ObjectPool<ClickhouseConnection> mockConnection = newMockConnection(auditEvent -> {
+            try {
+                latch.await(); // emulate blocking task
+            } catch (InterruptedException ignored) {
 
             }
-
-            @Override
-            public void connect() {
-
-            }
-
-            @Override
-            public void insert(AuditEvent e) {
-                try {
-                    latch.await(); // emulate blocking task
-                } catch (InterruptedException ignored) {
-
-                }
-            }
-        };
+        });
 
         DefaultAuditService service = new DefaultAuditService(
                 Executors.newSingleThreadExecutor(),
