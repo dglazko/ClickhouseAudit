@@ -1,8 +1,9 @@
-package ru.anarok.audit;
+package ru.anarok.audit.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import ru.anarok.audit.api.ClickhouseConnectionFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

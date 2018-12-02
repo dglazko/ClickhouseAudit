@@ -1,4 +1,6 @@
-package ru.anarok.audit;
+package ru.anarok.audit.api;
+
+import ru.anarok.audit.impl.AuditEvent;
 
 import java.sql.SQLException;
 

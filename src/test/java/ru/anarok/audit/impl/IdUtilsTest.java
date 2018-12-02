@@ -1,7 +1,8 @@
-package ru.anarok.audit;
+package ru.anarok.audit.impl;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.anarok.audit.impl.IdUtils;
 
 class IdUtilsTest {
 

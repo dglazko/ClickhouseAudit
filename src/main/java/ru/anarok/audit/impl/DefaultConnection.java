@@ -1,19 +1,20 @@
-package ru.anarok.audit;
+package ru.anarok.audit.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import ru.anarok.audit.api.ClickhouseConnection;
 
 import java.sql.*;
 import java.util.Map;
 
 @Slf4j
-class DefaultConnection implements ClickhouseConnection {
+public class DefaultConnection implements ClickhouseConnection {
     private final IdUtils idUtils = new IdUtils();
     private final String uri;
     private final String username;
     private final String password;
     private Connection connection;
 
-    DefaultConnection(String uri, String username, String password) {
+    public DefaultConnection(String uri, String username, String password) {
         this.uri = uri;
         this.username = username;
         this.password = password;
