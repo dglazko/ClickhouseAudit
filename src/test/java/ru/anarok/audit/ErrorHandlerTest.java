@@ -5,10 +5,10 @@ import org.junit.jupiter.api.Test;
 import ru.anarok.audit.impl.AuditEvent;
 import ru.anarok.audit.impl.DefaultAuditService;
 
-import java.sql.SQLException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -16,31 +16,33 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ErrorHandlerTest {
 
     @Test
-    public void interruptExceptionHandling() {
-        CountDownLatch latch = new CountDownLatch(1);
+    public void interruptExceptionHandling() throws InterruptedException {
+        CountDownLatch neverEndingBlockingLatch = new CountDownLatch(1);
 
         ClickhouseConnection mockConnection = new ClickhouseConnection() {
             @Override
-            public void connect() throws SQLException {
+            public void connect() {
 
             }
 
             @Override
             public void insert(AuditEvent e) throws Exception {
-                latch.await();
+                neverEndingBlockingLatch.await();
             }
 
             @Override
-            public void shutdownImmediately() throws SQLException {
+            public void shutdownImmediately() {
 
             }
         };
 
         AtomicBoolean errorFired = new AtomicBoolean(false);
         AtomicReference<Throwable> exceptionReference = new AtomicReference<>();
+        CountDownLatch errorLatch = new CountDownLatch(1);
         ClickhouseErrorHandler errorHandler = (audit, throwable) -> {
             errorFired.set(true);
             exceptionReference.set(throwable);
+            errorLatch.countDown();
         };
 
         DefaultAuditService service = new DefaultAuditService(
@@ -56,27 +58,27 @@ public class ErrorHandlerTest {
 
         service.shutdownInterrupted();
 
+        errorLatch.await(5, TimeUnit.SECONDS);
+
         Assertions.assertTrue(errorFired.get(), "Executor service interruption didn't cause error handle to fire");
         Assertions.assertTrue(exceptionReference.get() instanceof InterruptedException, "Unexpected exception type of " + exceptionReference.get());
     }
 
     @Test
     public void customExceptionHandling() {
-        CountDownLatch latch = new CountDownLatch(1);
-
         ClickhouseConnection mockConnection = new ClickhouseConnection() {
             @Override
-            public void connect() throws SQLException {
+            public void connect() {
 
             }
 
             @Override
-            public void insert(AuditEvent e) throws Exception {
+            public void insert(AuditEvent e) {
                 throw new IllegalStateException();
             }
 
             @Override
-            public void shutdownImmediately() throws SQLException {
+            public void shutdownImmediately() {
 
             }
         };
