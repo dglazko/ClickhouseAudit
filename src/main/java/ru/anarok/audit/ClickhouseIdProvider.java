@@ -1,4 +1,4 @@
-package ru.anarok.audit.api;
+package ru.anarok.audit;
 
 public interface ClickhouseIdProvider {
     long newRecordId();

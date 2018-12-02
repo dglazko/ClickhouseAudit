@@ -1,6 +1,6 @@
 package ru.anarok.audit.impl;
 
-import ru.anarok.audit.api.ClickhouseIdProvider;
+import ru.anarok.audit.ClickhouseIdProvider;
 
 import java.lang.management.ManagementFactory;
 import java.util.Random;

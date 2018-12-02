@@ -1,8 +1,8 @@
 package ru.anarok.audit.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.anarok.audit.api.ClickhouseConnection;
-import ru.anarok.audit.api.ClickhouseIdProvider;
+import ru.anarok.audit.ClickhouseConnection;
+import ru.anarok.audit.ClickhouseIdProvider;
 
 import java.sql.*;
 import java.util.Map;

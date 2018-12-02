@@ -25,10 +25,10 @@ class TaskExtractor {
     }
 
 
-    public ClickhouseAuditService.ClickhouseInsertTask getTask(FutureTask task) {
+    public DefaultAuditService.ClickhouseInsertTask getTask(FutureTask task) {
         if (field == null) return null;
         try {
-            return (ClickhouseAuditService.ClickhouseInsertTask) field.get(task);
+            return (DefaultAuditService.ClickhouseInsertTask) field.get(task);
         } catch (IllegalAccessException e) {
             log.warn("Unable to access field 'callable' of FutureTask.", e);
             return null;

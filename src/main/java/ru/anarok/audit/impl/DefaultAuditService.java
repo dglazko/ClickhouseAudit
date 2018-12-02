@@ -1,8 +1,9 @@
 package ru.anarok.audit.impl;
 
 import lombok.RequiredArgsConstructor;
-import ru.anarok.audit.api.ClickhouseConnection;
-import ru.anarok.audit.api.ClickhouseErrorHandler;
+import ru.anarok.audit.ClickhouseAuditService;
+import ru.anarok.audit.ClickhouseConnection;
+import ru.anarok.audit.ClickhouseErrorHandler;
 
 import java.util.Collections;
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-public class ClickhouseAuditService {
+public class DefaultAuditService implements ClickhouseAuditService {
     private final TaskExtractor taskExtractor = new TaskExtractor();
     private final ExecutorService executorService;
     private final ClickhouseConnection connection;

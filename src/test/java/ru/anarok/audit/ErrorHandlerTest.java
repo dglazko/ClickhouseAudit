@@ -2,10 +2,8 @@ package ru.anarok.audit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.anarok.audit.api.ClickhouseConnection;
-import ru.anarok.audit.api.ClickhouseErrorHandler;
 import ru.anarok.audit.impl.AuditEvent;
-import ru.anarok.audit.impl.ClickhouseAuditService;
+import ru.anarok.audit.impl.DefaultAuditService;
 
 import java.sql.SQLException;
 import java.util.concurrent.CountDownLatch;
@@ -45,7 +43,7 @@ public class ErrorHandlerTest {
             exceptionReference.set(throwable);
         };
 
-        ClickhouseAuditService service = new ClickhouseAuditService(
+        DefaultAuditService service = new DefaultAuditService(
                 Executors.newSingleThreadExecutor(),
                 mockConnection,
                 errorHandler
@@ -90,7 +88,7 @@ public class ErrorHandlerTest {
             exceptionReference.set(throwable);
         };
 
-        ClickhouseAuditService service = new ClickhouseAuditService(
+        DefaultAuditService service = new DefaultAuditService(
                 Executors.newSingleThreadExecutor(),
                 mockConnection,
                 errorHandler

@@ -1,7 +1,7 @@
 package ru.anarok.audit.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.anarok.audit.api.ClickhouseErrorHandler;
+import ru.anarok.audit.ClickhouseErrorHandler;
 
 @Slf4j
 public class Slf4jErrorHandler implements ClickhouseErrorHandler {
