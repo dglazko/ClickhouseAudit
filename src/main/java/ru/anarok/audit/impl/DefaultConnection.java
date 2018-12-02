@@ -2,19 +2,21 @@ package ru.anarok.audit.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.anarok.audit.api.ClickhouseConnection;
+import ru.anarok.audit.api.ClickhouseIdProvider;
 
 import java.sql.*;
 import java.util.Map;
 
 @Slf4j
 public class DefaultConnection implements ClickhouseConnection {
-    private final IdUtils idUtils = new IdUtils();
+    private final ClickhouseIdProvider idProvider;
     private final String uri;
     private final String username;
     private final String password;
     private Connection connection;
 
-    public DefaultConnection(String uri, String username, String password) {
+    public DefaultConnection(ClickhouseIdProvider idProvider, String uri, String username, String password) {
+        this.idProvider = idProvider;
         this.uri = uri;
         this.username = username;
         this.password = password;
@@ -61,7 +63,7 @@ public class DefaultConnection implements ClickhouseConnection {
 
     @Override
     public void insert(AuditEvent e) throws SQLException {
-        long id = idUtils.getRecordId();
+        long id = idProvider.newRecordId();
         PreparedStatement stmt = connection.prepareStatement(
                 "INSERT INTO Audits (auditId, timestamp, emitter, type, message)" +
                         "VALUES (?, ?, ?, ?, ?)"

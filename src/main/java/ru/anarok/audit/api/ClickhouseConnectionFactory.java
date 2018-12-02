@@ -1,9 +1,11 @@
 package ru.anarok.audit.api;
 
 import ru.anarok.audit.impl.DefaultConnection;
+import ru.anarok.audit.impl.DefaultIdProvider;
 
 public class ClickhouseConnectionFactory {
     private final String hostname;
+    private ClickhouseIdProvider idProvider = new DefaultIdProvider();
     private int port = 8123;
     private String database;
     private String username;
@@ -39,6 +41,11 @@ public class ClickhouseConnectionFactory {
         return this;
     }
 
+    public ClickhouseConnectionFactory idProvider(ClickhouseIdProvider provider) {
+        this.idProvider = provider;
+        return this;
+    }
+
     public ClickhouseConnection build() {
         String uri = "jdbc:clickhouse://" + hostname + ":" + port;
 
@@ -46,6 +53,6 @@ public class ClickhouseConnectionFactory {
             uri += "/" + database;
 
 
-        return new DefaultConnection(uri, username, password);
+        return new DefaultConnection(idProvider, uri, username, password);
     }
 }

@@ -1,10 +1,12 @@
 package ru.anarok.audit.impl;
 
+import ru.anarok.audit.api.ClickhouseIdProvider;
+
 import java.lang.management.ManagementFactory;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class IdUtils {
+public class DefaultIdProvider implements ClickhouseIdProvider {
     private final static int MIN_LOCAL_ID = 0;
     private final static int MAX_LOCAL_ID = (int) Math.pow(2, 16) - 1;
     private final static int CLIENT_MASK = 0b11111111;
@@ -12,7 +14,7 @@ public class IdUtils {
     private final byte clientId;
     private AtomicInteger localId = new AtomicInteger(MIN_LOCAL_ID);
 
-    public IdUtils() {
+    public DefaultIdProvider() {
         String[] vmName = ManagementFactory.getRuntimeMXBean().getName().split("@");
         if (vmName.length >= 1 && vmName[0].matches("/$[0-9]+^/")) {
             this.clientId = (byte) (Integer.valueOf(vmName[0]) & CLIENT_MASK);
@@ -32,14 +34,14 @@ public class IdUtils {
      *
      * @return newly generated global row id
      */
-    public long getRecordId() {
+    public long newRecordId() {
         long timestamp = System.currentTimeMillis() / 1000;
         short localRecordId = getLocalRowId();
 
         return combineIds(timestamp, clientId, localRecordId);
     }
 
-    protected short getLocalRowId() {
+    private short getLocalRowId() {
         return (short) localId.getAndUpdate(operand -> {
             if (operand == MAX_LOCAL_ID)
                 return MIN_LOCAL_ID;

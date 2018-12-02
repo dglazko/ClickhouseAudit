@@ -2,13 +2,12 @@ package ru.anarok.audit.impl;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.anarok.audit.impl.IdUtils;
 
-class IdUtilsTest {
+class DefaultIdProviderTest {
 
     @Test
     public void testIds() {
-        IdUtils utils = new IdUtils();
+        DefaultIdProvider utils = new DefaultIdProvider();
 
         String fullTimeStamp = printBits(utils.combineIds((long) Math.pow(2, 40) - 1, (byte) 0, (short) 0));
         Assertions.assertEquals("1111111111111111111111111111111111111111000000000000000000000000", fullTimeStamp, "Timestamp field overflow");
