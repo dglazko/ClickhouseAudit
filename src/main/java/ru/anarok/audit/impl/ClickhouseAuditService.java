@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import ru.anarok.audit.api.ClickhouseConnection;
 import ru.anarok.audit.api.ClickhouseErrorHandler;
 
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -77,7 +76,7 @@ public class ClickhouseAuditService {
             try {
                 connection.insert(event);
                 return true;
-            } catch (SQLException ex) {
+            } catch (Exception ex) {
                 if (errorHandler != null)
                     errorHandler.onInsertFailed(event, ex);
 

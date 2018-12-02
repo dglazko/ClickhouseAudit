@@ -5,12 +5,10 @@ import ru.anarok.audit.api.ClickhouseConnection;
 import ru.anarok.audit.api.ClickhouseConnectionFactory;
 import ru.anarok.audit.impl.AuditEvent;
 
-import java.sql.SQLException;
-
 class MainUseCaseTest {
 
     @Test
-    void insertionTest() throws SQLException {
+    void insertionTest() throws Exception {
         ClickhouseConnection connection = ClickhouseConnectionFactory.create("localhost").build();
         connection.connect();
 
