@@ -11,8 +11,8 @@ public class DefaultIdProvider implements ClickhouseIdProvider {
     private final static int MAX_LOCAL_ID = (int) Math.pow(2, 16) - 1;
     private final static int CLIENT_MASK = 0b11111111;
     private final static int LOCAL_ID_MASK = 0b1111111111111111;
+    private final AtomicInteger localId = new AtomicInteger(MIN_LOCAL_ID);
     private final byte clientId;
-    private AtomicInteger localId = new AtomicInteger(MIN_LOCAL_ID);
 
     public DefaultIdProvider() {
         String[] vmName = ManagementFactory.getRuntimeMXBean().getName().split("@");

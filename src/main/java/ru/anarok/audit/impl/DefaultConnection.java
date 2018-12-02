@@ -31,7 +31,7 @@ public class DefaultConnection implements ClickhouseConnection {
         createTables();
     }
 
-    protected void createTables() throws SQLException {
+    private void createTables() throws SQLException {
         executeQuery(
                 "CREATE TABLE IF NOT EXISTS Audits (" +
                         "auditId UInt64," +
